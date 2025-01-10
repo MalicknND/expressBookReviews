@@ -31,7 +31,7 @@ public_users.get("/", function (req, res) {
   })
     .then((bookList) => {
       // Respond with the list of books on success
-      res.status(200).json(JSON.stringify(bookList, null, 2));
+      res.status(200).json(bookList);
     })
     .catch((error) => {
       // Respond with an error message on failure
