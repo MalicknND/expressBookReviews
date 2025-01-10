@@ -71,8 +71,60 @@ regd_users.post("/login", (req, res) => {
 
 // Add a book review
 regd_users.put("/auth/review/:isbn", (req, res) => {
-  //Write your code here
-  return res.status(300).json({ message: "Yet to be implemented" });
+  /*
+  Complétez le code pour ajouter ou modifier une critique de livre.
+  Indice : Vous devez fournir une critique en tant que requête et elle doit être publiée avec le nom d’utilisateur (stocké dans la session). 
+  Si le même utilisateur publie une critique différente sur le même ISBN, cela doit modifier la critique existante. 
+  Si un autre utilisateur se connecte et publie une critique sur le même ISBN, elle sera ajoutée comme une critique différente sous le même ISBN.
+  */
+
+  const username = req.session?.authorization?.username; // Vérifie si l'utilisateur est connecté
+  console.log(username);
+  const isbn = req.params.isbn;
+  const review = req.body.review;
+
+  // Validation des champs requis
+  if (!username) {
+    return res
+      .status(401)
+      .json({ message: "Unauthorized: User not logged in." });
+  }
+  if (!isbn || !review) {
+    return res
+      .status(400)
+      .json({ message: "All fields (ISBN and review) are required." });
+  }
+
+  // Vérifie si l'ISBN existe dans les données des livres
+  if (!books[isbn]) {
+    return res
+      .status(404)
+      .json({ message: `Book with ISBN ${isbn} not found.` });
+  }
+
+  // Initialise les critiques si elles n'existent pas pour ce livre
+  if (!books[isbn].reviews) {
+    books[isbn].reviews = {};
+  }
+
+  // Ajoute ou met à jour la critique de l'utilisateur
+  books[isbn].reviews[username] = review;
+
+  // Répond avec un message de succès
+  return res
+    .status(200)
+    .json({ message: "Review added or updated successfully." });
+});
+
+// Delete a book review
+/*
+  Hint: Filter & delete the reviews based on the session username, so that a user can delete only his/her reviews and not other users’.
+*/
+regd_users.delete("/auth/review/:isbn", (req, res) => {
+  const username = req.session?.authorization?.username;
+  const isbn = req.params.isbn;
+  delete books[isbn].reviews[username];
+  return res.status(200).json({ message: "Review deleted successfully." });
 });
 
 module.exports.authenticated = regd_users;
